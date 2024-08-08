@@ -186,7 +186,7 @@ export default {
     tab_items: [
       {
         label: 'Track object',
-        disabled: false,
+        disabled: true,
         alertIcon: 'i-heroicons-video-camera',
         alertTitle: 'The selected object in the video is being tracked',
         alertContent:
@@ -206,23 +206,20 @@ export default {
       },
       {
         label: 'Inpaint',
-        disabled: false,
+        disabled: true,
         alertIcon: 'i-heroicons-paint-brush',
         alertTitle: 'Every frame is inpainted using the prompt',
         alertContent:
-          'This is done by the Stable Diffusion model that is running on Replicate.',
+          'This is done by the SDXL model that is running on Replicate.',
         alertActions: [
           {
             variant: 'solid',
             color: 'primary',
-            label: 'Run Stable Diffusion with an API',
+            label: 'Run SDXL with an API',
             icon: 'i-heroicons-arrow-top-right-on-square',
             trailing: true,
             click: () => {
-              window.open(
-                'https://replicate.com/stability-ai/stable-diffusion-inpainting',
-                '_blank'
-              )
+              window.open('https://replicate.com/stability-ai/sdxl', '_blank')
             }
           }
         ]
@@ -287,7 +284,7 @@ export default {
         // Write the file to FFmpeg's file system
         ffmpeg.FS('writeFile', 'input_video', await fetchFile(file))
 
-        // Convert the input video to MP4 with max 480x480 size
+        // Convert the input video to MP4 with max 512x512 size
         await ffmpeg.run(
           '-i',
           'input_video',
@@ -300,7 +297,7 @@ export default {
           '-b:a',
           '192k', // Audio bitrate
           '-vf',
-          'scale=w=480:h=480:force_original_aspect_ratio=decrease,pad=480:480:(ow-iw)/2:(oh-ih)/2,setsar=1:1', // Scale and pad to 480x480
+          'scale=w=512:h=512:force_original_aspect_ratio=decrease,pad=512:512:(ow-iw)/2:(oh-ih)/2,setsar=1:1', // Scale and pad to 512x512
           '-pix_fmt',
           'yuv420p', // Ensure video compatibility
           '-color_range',
@@ -537,7 +534,7 @@ export default {
               try {
                 const batchPromises = batch.map((mask, index) =>
                   this.createPrediction(
-                    '95b7223104132402a9ae91cc677285bc5eb997834bd2349fa486f53910fd68b3',
+                    '7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc',
                     {
                       prompt: this.prompt,
                       image: batchFrames[index],
@@ -545,8 +542,8 @@ export default {
                       width: 512,
                       height: 512,
                       num_outputs: 1,
-                      num_inference_steps: 16,
-                      guidance_scale: 9,
+                      num_inference_steps: 20,
+                      guidance_scale: 7.5,
                       scheduler: 'K_EULER_ANCESTRAL',
                       disable_safety_checker: true // Cause of a lot of failures
                     },
