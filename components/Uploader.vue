@@ -41,7 +41,7 @@
           )
             .w-1.h-1.bg-red-500.rounded-full
         u-form-group.mt-4(
-          label="Prompt"
+          label="Inpainter prompt"
           size="xl"
         )
           u-input(
@@ -76,7 +76,10 @@
             source(:src="input_video_object_url")
       template(v-else)
         template(v-if="loading_file")
-          u-progress(animation="swing")
+          u-progress(
+            :ui="{ wrapper: 'w-9/12' }"
+            animation="swing"
+          )
         template(v-else)
           u-icon.icon(
             name="i-heroicons-arrow-up-tray"
@@ -90,40 +93,39 @@
         color="black"
       )
   div.space-y-4
-    u-form-group(
+    u-tabs(
       v-if="show_tabs"
-      label="Progress"
-      size="xl"
+      v-model="selected_tab"
+      :items="tab_items"
     )
-      u-tabs(
-        v-model="selected_tab"
-        :items="tab_items"
-      )
-        template(#default="{ item, index, selected }")
-          span.truncate(
-            :class="[selected && 'text-primary-500 dark:text-primary-400']"
-          ) {{ index + 1 }}. {{ item.label }}
-        template(#item="{ item }")
-          template(v-if="item.showVideo")
-            video.w-full.bg-black(
-              v-if="output_video_mask"
-              controls
-            )
-              source(:src="output_video_mask")
-            video.w-full.bg-black(
-              v-if="output_video_inpainted"
-              controls
-            )
-              source(:src="output_video_inpainted")
-          | {{ item.content }}
-          u-button.ml-1.mt-1(
-            v-if="item.showProgress"
-            :label="current_prediction_status"
-            :color="status_badge_color"
-            :loading="current_prediction_status === 'starting' || current_prediction_status === 'processing'"
-            variant="solid"
-            size="2xs"
-          )
+      template(#default="{ item, index, selected }")
+        span.truncate(
+          :class="[selected && 'text-primary-500 dark:text-primary-400']"
+        ) {{ index + 1 }}. {{ item.label }}
+      template(#item="{ item }")
+        u-divider.my-4(
+          v-if="status"
+          :label="status"
+          type="dashed"
+        )
+        u-alert.mb-4(
+          :title="item.alertTitle"
+          :description="item.alertContent"
+          :icon="item.alertIcon"
+          :actions="item.alertActions"
+          color="primary"
+          variant="soft"
+        )
+        video.w-full.bg-black(
+          v-if="output_video_mask && !output_video_inpainted"
+          controls
+        )
+          source(:src="output_video_mask")
+        video.w-full.bg-black(
+          v-if="output_video_inpainted"
+          controls
+        )
+          source(:src="output_video_inpainted")
 </template>
 
 <script>
@@ -176,7 +178,7 @@ export default {
     show_tabs: false,
     selected_tab: 0,
 
-    current_prediction_status: 'starting',
+    status: null,
 
     output_video_mask: null,
     output_video_inpainted: null,
@@ -184,37 +186,49 @@ export default {
     tab_items: [
       {
         label: 'Track object',
-        icon: 'i-heroicons-video-camera',
         disabled: false,
-        showProgress: true,
-        showVideo: false,
-        content: 'The selected object in the video is being tracked by SAM 2.'
+        alertIcon: 'i-heroicons-video-camera',
+        alertTitle: 'The selected object in the video is being tracked',
+        alertContent:
+          'This is done by the SAM 2 model that is running on Replicate.',
+        alertActions: [
+          {
+            variant: 'solid',
+            color: 'primary',
+            label: 'Run SAM 2 with an API',
+            icon: 'i-heroicons-arrow-top-right-on-square',
+            trailing: true,
+            click: () => {
+              window.open('https://replicate.com/meta/sam-2', '_blank')
+            }
+          }
+        ]
       },
       {
         label: 'Inpaint',
-        icon: 'i-heroicons-paint-brush',
         disabled: false,
-        showProgress: false,
-        showVideo: true,
-        content: 'The mask is used to inpaint every frame in the video.'
+        alertIcon: 'i-heroicons-paint-brush',
+        alertTitle: 'Every frame is inpainted using the prompt',
+        alertContent:
+          'This is done by the Stable Diffusion model that is running on Replicate.',
+        alertActions: [
+          {
+            variant: 'solid',
+            color: 'primary',
+            label: 'Run Stable Diffusion with an API',
+            icon: 'i-heroicons-arrow-top-right-on-square',
+            trailing: true,
+            click: () => {
+              window.open(
+                'https://replicate.com/stability-ai/stable-diffusion-inpainting',
+                '_blank'
+              )
+            }
+          }
+        ]
       }
     ]
   }),
-  computed: {
-    status_badge_color() {
-      const color_map = {
-        starting: 'black',
-        processing: 'blue',
-        succeeded: 'green',
-        failed: 'red',
-        canceled: 'yellow'
-      }
-
-      return Object.keys(color_map).includes(this.current_prediction_status)
-        ? color_map[this.current_prediction_status]
-        : 'gray'
-    }
-  },
   watch: {
     modal(val) {
       if (!val) return
@@ -248,7 +262,7 @@ export default {
       this.show_tabs = false
       this.selected_tab = 0
 
-      this.current_prediction_status = 'starting'
+      this.status = null
 
       this.output_video_mask = null
       this.output_video_inpainted = null
@@ -289,6 +303,14 @@ export default {
           'scale=w=480:h=480:force_original_aspect_ratio=decrease,pad=480:480:(ow-iw)/2:(oh-ih)/2,setsar=1:1', // Scale and pad to 480x480
           '-pix_fmt',
           'yuv420p', // Ensure video compatibility
+          '-color_range',
+          '1', // Force full color range (0-255)
+          '-colorspace',
+          'bt709', // Use BT.709 color space (standard for HD)
+          '-color_trc',
+          'bt709',
+          '-color_primaries',
+          'bt709',
           'output.mp4'
         )
 
@@ -461,11 +483,29 @@ export default {
             vis_frame_stride: 1
           },
           (prediction) => {
-            this.current_prediction_status = prediction?.status || 'starting'
+            function getLastPercentage(logString) {
+              const percentageRegex = /\s(\d+)%\|/g
+              let lastMatch = null
+              let match
+
+              while ((match = percentageRegex.exec(logString)) !== null) {
+                lastMatch = match
+              }
+
+              return lastMatch ? lastMatch[1] : 0
+            }
+
+            const status =
+              prediction?.status === 'processing'
+                ? `processing (${getLastPercentage(prediction?.logs)}%)`
+                : prediction?.status
+
+            this.status = `Tracking: ${status || 'starting'}`
           }
         )
 
         // Create mask video from frames
+        this.status = 'Downloading video'
         const frames_highlighted = prediction_sam2?.output?.highlighted_frames
         const frames_mask = prediction_sam2?.output?.black_white_masks
         this.output_video_mask = await this.createVideoFromFrames(
@@ -485,6 +525,10 @@ export default {
           for (let i = 0; i < frames_mask.length; i += batchSize) {
             const batch = frames_mask.slice(i, i + batchSize)
             const batchFrames = frames.slice(i, i + batchSize)
+
+            this.status = `Inpainting (${Math.ceil(
+              (i / frames_mask.length) * 100
+            )}%)`
 
             let retryCount = 0
             let batchResults
@@ -551,6 +595,8 @@ export default {
           return inpainted_frames
         }
 
+        this.status = 'Inpainting'
+
         // Usage
         const batchSize = 10 // Configurable batch size
         const maxRetries = 3 // Configurable max retries
@@ -562,6 +608,7 @@ export default {
         )
 
         console.log('inpainted_frames', inpainted_frames)
+        this.status = 'Creating final video'
 
         // Create final video from inpainted frames
         this.output_video_inpainted = await this.createVideoFromFrames(
@@ -569,6 +616,8 @@ export default {
         )
       } catch (e) {
         console.log('--- error (pipeline):', e.message)
+      } finally {
+        this.status = null
       }
     },
 

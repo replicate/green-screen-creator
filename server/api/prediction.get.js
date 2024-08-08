@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
     const json = await result.json()
 
     // Remove potentially long data
-    delete json.logs
+    // delete json.logs
 
     return { data: json }
   } catch (e) {
