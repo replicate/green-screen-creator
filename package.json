@@ -1,0 +1,27 @@
+{
+  "name": "inpainter-video",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@ffmpeg/core": "0.10.0",
+    "@ffmpeg/ffmpeg": "0.9.8",
+    "@nuxt/ui": "^2.18.3",
+    "@vueuse/core": "^10.11.0",
+    "@vueuse/nuxt": "^10.11.0",
+    "nuxt": "^3.12.4",
+    "vue": "latest"
+  },
+  "devDependencies": {
+    "pug": "^3.0.3",
+    "pug-plain-loader": "^1.1.0",
+    "stylus": "^0.63.0",
+    "stylus-loader": "^8.1.0"
+  }
+}
