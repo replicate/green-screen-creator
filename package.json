@@ -1,5 +1,5 @@
 {
-  "name": "inpainter-video",
+  "name": "green-screen-creator",
   "private": true,
   "type": "module",
   "scripts": {
@@ -16,6 +16,7 @@
     "@vueuse/core": "^10.11.0",
     "@vueuse/nuxt": "^10.11.0",
     "nuxt": "^3.12.4",
+    "three": "^0.167.1",
     "vue": "latest"
   },
   "devDependencies": {

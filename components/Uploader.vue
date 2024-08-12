@@ -1,7 +1,7 @@
 <template lang="pug">
-#uploader.mx-auto.mb-8.px-4.max-w-5xl.grid.grid-cols-1.gap-8(
+#uploader.mx-auto.pb-8.px-4.max-w-5xl.grid.grid-cols-1.gap-8(
   v-if="api_token"
-  class="sm:mb-16 md:mb-24 sm:px-6 lg:px-8 sm:gap-y-24 md:grid-cols-2"
+  class="sm:pb-16 md:pb-24 sm:px-6 lg:px-8 sm:gap-y-24 md:grid-cols-2"
 )
   //- Hidden input
   input(
@@ -23,12 +23,12 @@
         .flex.items-center.justify-between
           h3.text-base.font-semibold.leading-6.text-gray-900(
             class="dark:text-white"
-          ) Click on an object to track and inpaint
+          ) Click on an object to track
       .relative.inline-block
         img.cursor-pointer(
-          v-if="input_video_frames.length > 0"
+          v-if="input_video_first_frame"
           @click="onImageClicked"
-          :src="input_video_frames[0]"
+          :src="input_video_first_frame"
           class="max-w-full max-h-[70vh]"
           ref="firstFrameImage"
         )
@@ -40,16 +40,6 @@
             class="-ml-3 -mt-3"
           )
             .w-1.h-1.bg-red-500.rounded-full
-        u-form-group.mt-4(
-          label="Inpainter prompt"
-          size="xl"
-        )
-          u-input(
-            v-model="prompt"
-            size="xl"
-            placeholder="Prompt"
-            icon="i-heroicons-chat-bubble-bottom-center-text"
-          )
       template(#footer)
         .flex
           u-button(
@@ -66,66 +56,94 @@
           ) Submit
 
   div
-    .upload-button.relative.overflow-hidden.w-full.flex.flex-col.gap-4.justify-center.items-center.text-center.cursor-pointer.rounded-2xl.aspect-1.text-2xl(
-      @click="onClickSelect"
-      class="bg-gray-100 hover:bg-[#dddddd]"
-    )
-      template(v-if="input_video_object_url")
-        .preview
-          video.w-full.h-full.bg-black(controls)
-            source(:src="input_video_object_url")
-      template(v-else)
-        template(v-if="loading_file")
-          u-progress(
-            :ui="{ wrapper: 'w-9/12' }"
-            animation="swing"
-          )
-        template(v-else)
-          u-icon.icon(
-            name="i-heroicons-arrow-up-tray"
-          )
-          span Upload a video
-    .text-center.my-4(v-if="input_video_object_url")
-      u-button(
-        @click="reset"
-        icon="i-heroicons-trash"
-        variant="link"
-        color="black"
+    //- File upload
+    template(v-if="input_method === 'file'")
+      .upload-button.relative.overflow-hidden.w-full.flex.flex-col.gap-4.justify-center.items-center.text-center.cursor-pointer.rounded-2xl.aspect-1.text-2xl(
+        @click="onClickSelect"
+        class="bg-gray-100 hover:bg-[#dddddd]"
       )
+        template(v-if="input_video_object_url")
+          .preview
+            video.w-full.h-full.bg-black(controls)
+              source(:src="input_video_object_url")
+        template(v-else)
+          template(v-if="loading_file")
+            u-progress(
+              :ui="{ wrapper: 'w-9/12' }"
+              animation="swing"
+            )
+          template(v-else)
+            u-icon.icon(
+              name="i-heroicons-arrow-up-tray"
+            )
+            span Upload a video
+      .text-center.my-4(v-if="input_video_object_url")
+        u-button(
+          @click="reset"
+          icon="i-heroicons-trash"
+          variant="link"
+          color="black"
+        )
+      .text-center.my-4(v-else)
+        u-button(
+          @click="input_method = 'url'"
+          icon="i-heroicons-link"
+          variant="link"
+          color="black"
+        ) or paste an URL of a video file
+
+    //- URL upload
+    template(v-if="input_method === 'url'")
+      .upload-button.relative.overflow-hidden.w-full.flex.flex-col.gap-4.justify-center.items-center.text-center.rounded-2xl.aspect-1.text-2xl(
+        class="bg-gray-100"
+      )
+        u-input(
+          v-model="input_video_url"
+          @keydown.enter="onClickSelectUrl"
+          :disabled="loading_file"
+          class="w-9/12"
+          size="xl"
+          placeholder="https://"
+          autofocus
+        )
+        u-button(
+          @click="onClickSelectUrl"
+          :loading="loading_file"
+          class="w-9/12"
+          size="xl"
+          color="black"
+          block
+        ) Upload
+      .text-center.my-4
+        u-button(
+          @click="input_method = 'file'"
+          icon="i-heroicons-arrow-up-tray"
+          variant="link"
+          color="black"
+        ) or upload a file from your computer
+
   div.space-y-4
-    u-tabs(
-      v-if="show_tabs"
-      v-model="selected_tab"
-      :items="tab_items"
-    )
-      template(#default="{ item, index, selected }")
-        span.truncate(
-          :class="[selected && 'text-primary-500 dark:text-primary-400']"
-        ) {{ index + 1 }}. {{ item.label }}
-      template(#item="{ item }")
-        u-divider.my-4(
+    template(v-if="loading_prediction")
+      template(v-if="!output_video")
+        u-divider.mb-4(
           v-if="status"
           :label="status"
           type="dashed"
         )
         u-alert.mb-4(
-          :title="item.alertTitle"
-          :description="item.alertContent"
-          :icon="item.alertIcon"
-          :actions="item.alertActions"
+          title="The selected object in the video is being tracked"
+          description="This is done by the SAM 2 model that is running on Replicate."
+          icon="i-heroicons-video-camera"
+          :actions="[{ variant: 'solid', color: 'primary', label: 'Run SAM 2 with an API', icon: 'i-heroicons-arrow-top-right-on-square', trailing: true, click: () => { window.open('https://replicate.com/zsxkib/sam-2-video', '_blank') } }]"
           color="primary"
           variant="soft"
         )
-        video.w-full.bg-black(
-          v-if="output_video_mask && !output_video_inpainted"
-          controls
-        )
-          source(:src="output_video_mask")
-        video.w-full.bg-black(
-          v-if="output_video_inpainted"
-          controls
-        )
-          source(:src="output_video_inpainted")
+      video.w-full.bg-black.aspect-1.rounded-2xl(
+        v-else
+        controls
+        crossorigin="anonymous"
+      )
+        source(:src="output_video")
 </template>
 
 <script>
@@ -152,6 +170,44 @@ const blobToBase64 = (blob) => {
   })
 }
 
+const extractFirstFrame = (videoUrl) => {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video')
+    video.crossOrigin = 'anonymous' // Enable CORS access
+    video.src = videoUrl
+
+    // Load metadata first
+    video.addEventListener('loadedmetadata', () => {
+      // Set a small currentTime to grab the first frame
+      video.currentTime = 0.01
+    })
+
+    video.addEventListener('seeked', () => {
+      // Video has seeked to the required time
+      const canvas = document.createElement('canvas')
+      canvas.width = video.videoWidth
+      canvas.height = video.videoHeight
+
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+
+      // Convert to data URL
+      const dataUrl = canvas.toDataURL('image/jpeg')
+      resolve(dataUrl)
+
+      // Clean up
+      video.src = ''
+    })
+
+    video.addEventListener('error', (e) => {
+      reject(new Error(`Video error: ${video.error.message}`))
+    })
+
+    // Start loading the video
+    video.load()
+  })
+}
+
 export default {
   name: 'Uploader',
   setup: () => ({
@@ -160,71 +216,25 @@ export default {
   data: () => ({
     loading_file: false,
     loading_upload: false,
+    loading_prediction: false,
+
+    input_method: 'file',
 
     input_video_base64: null,
     input_video_object_url: null,
-    input_video_frames: [],
+    input_video_first_frame: null,
     input_video_framerate: null,
     input_video_file_url: null,
+    input_video_url: null,
+
+    output_video: null,
 
     crosshair_position: null,
     selected_coordinates: null,
     frame_image_natural_size: { width: 0, height: 0 },
 
-    prompt: 'green jungle plants',
-
     modal: false,
-
-    show_tabs: false,
-    selected_tab: 0,
-
-    status: null,
-
-    output_video_mask: null,
-    output_video_inpainted: null,
-
-    tab_items: [
-      {
-        label: 'Track object',
-        disabled: true,
-        alertIcon: 'i-heroicons-video-camera',
-        alertTitle: 'The selected object in the video is being tracked',
-        alertContent:
-          'This is done by the SAM 2 model that is running on Replicate.',
-        alertActions: [
-          {
-            variant: 'solid',
-            color: 'primary',
-            label: 'Run SAM 2 with an API',
-            icon: 'i-heroicons-arrow-top-right-on-square',
-            trailing: true,
-            click: () => {
-              window.open('https://replicate.com/meta/sam-2', '_blank')
-            }
-          }
-        ]
-      },
-      {
-        label: 'Inpaint',
-        disabled: true,
-        alertIcon: 'i-heroicons-paint-brush',
-        alertTitle: 'Every frame is inpainted using the prompt',
-        alertContent:
-          'This is done by the SDXL model that is running on Replicate.',
-        alertActions: [
-          {
-            variant: 'solid',
-            color: 'primary',
-            label: 'Run SDXL with an API',
-            icon: 'i-heroicons-arrow-top-right-on-square',
-            trailing: true,
-            click: () => {
-              window.open('https://replicate.com/stability-ai/sdxl', '_blank')
-            }
-          }
-        ]
-      }
-    ]
+    status: null
   }),
   watch: {
     modal(val) {
@@ -245,30 +255,30 @@ export default {
     reset() {
       this.loading_file = false
       this.loading_upload = false
+      this.loading_prediction = false
 
       this.input_video_base64 = null
       this.input_video_object_url = null
-      this.input_video_frames = []
+      this.input_video_first_frame = null
       this.input_video_framerate = null
       this.input_video_file_url = null
+
+      this.output_video = null
       this.crosshair_position = null
       this.selected_coordinates = null
 
-      this.prompt = 'green jungle plants'
-
-      this.show_tabs = false
-      this.selected_tab = 0
-
       this.status = null
-
-      this.output_video_mask = null
-      this.output_video_inpainted = null
 
       this.$refs.file.value = null
     },
     onClickSelect() {
-      if (!this.api_token || this.show_tabs) return
+      if (!this.api_token || this.loading_prediction) return
       this.$refs.file.click()
+    },
+    onClickSelectUrl() {
+      if (!this.api_token || this.loading_prediction || !this.input_video_url)
+        return
+      this.onUrlSelected()
     },
     async onFileSelected(e) {
       this.loading_file = true
@@ -317,18 +327,20 @@ export default {
         const fpsMatch = ffmpeg_logs.match(/(\d+(?:\.\d+)?) fps/)
         this.input_video_framerate = fpsMatch ? parseFloat(fpsMatch[1]) : null
 
-        // Extract all frames as JPEG
+        // Extract only the first frame as JPEG
         await ffmpeg.run(
           '-i',
           'output.mp4',
           '-vf',
-          'fps=' + this.input_video_framerate,
+          'select=eq(n\\,0)', // Note the double backslash
+          '-vframes',
+          '1',
           '-q:v',
-          '2', // JPEG quality (2-31, lower is better quality)
-          'frame_%d.jpg'
+          '2',
+          'first_frame.jpg'
         )
 
-        // Read the converted MP4 file and the thumbnail
+        // Read the converted MP4 file
         const mp4Data = ffmpeg.FS('readFile', 'output.mp4')
 
         // Create Blob from the MP4 data
@@ -340,23 +352,12 @@ export default {
         this.input_video_base64 = videoBase64
         this.input_video_object_url = URL.createObjectURL(mp4Blob)
 
-        // Read all frames and convert to base64
-        this.input_video_frames = []
-        let frameIndex = 1
-        while (true) {
-          try {
-            const frameData = ffmpeg.FS('readFile', `frame_${frameIndex}.jpg`)
-            const frameBlob = new Blob([frameData.buffer], {
-              type: 'image/jpeg'
-            })
-            const frameBase64 = await blobToBase64(frameBlob)
-            this.input_video_frames.push(frameBase64)
-            frameIndex++
-          } catch (error) {
-            // No more frames to read
-            break
-          }
-        }
+        // Read first frame and convert to base64
+        const frameData = ffmpeg.FS('readFile', 'first_frame.jpg')
+        const frameBlob = new Blob([frameData.buffer], {
+          type: 'image/jpeg'
+        })
+        this.input_video_first_frame = await blobToBase64(frameBlob)
 
         this.modal = true
         this.loading_file = false
@@ -367,12 +368,25 @@ export default {
         try {
           ffmpeg.FS('unlink', 'input_video')
           ffmpeg.FS('unlink', 'output.mp4')
-          for (let i = 1; i <= this.input_video_frames.length; i++) {
-            ffmpeg.FS('unlink', `frame_${i}.jpg`)
-          }
+          ffmpeg.FS('unlink', 'first_frame.jpg')
         } catch (e) {
           console.error('Error cleaning up FFmpeg file system:', e)
         }
+      }
+    },
+    async onUrlSelected(e) {
+      this.reset()
+      this.loading_file = true
+
+      try {
+        this.input_video_first_frame = await extractFirstFrame(
+          this.input_video_url
+        )
+
+        this.modal = true
+        this.loading_file = false
+      } catch (e) {
+        console.log('--- error (onFileSelected):', e)
       }
     },
     onImageClicked(e) {
@@ -445,11 +459,17 @@ export default {
 
       try {
         // Wait for video upload to complete
-        const [input_video_file_url] = await Promise.all([
-          this.createFile('input_video.mp4', this.input_video_base64)
-        ])
+        if (!this.input_video_url) {
+          const [input_video_file_url] = await Promise.all([
+            this.createFile('input_video.mp4', this.input_video_base64)
+          ])
 
-        this.input_video_file_url = input_video_file_url
+          this.input_video_file_url = input_video_file_url
+
+          // Just use the provided URL
+        } else {
+          this.input_video_file_url = this.input_video_url
+        }
 
         // Close modal and end loading
         this.modal = false
@@ -463,21 +483,28 @@ export default {
       }
     },
     async pipeline() {
-      this.show_tabs = true
+      this.loading_prediction = true
 
       try {
-        this.selected_tab = 0
-
         // SAM 2
-        const prediction_sam2 = await this.createPrediction(
-          'd0b79afbb65a1263ca382029ffa5886749b724963cf309de4a95a9f67e8022af',
+        // https://replicate.com/zsxkib/sam-2-video
+        this.status = 'Tracking: starting'
+
+        const prediction = await this.createPrediction(
+          '4cf1856c2e63670fa0a933b62c488d8321a5b5035215cf3e58a31904849deb7a',
           {
-            video: this.input_video_file_url,
-            clicks: `[${this.selected_coordinates.x},${this.selected_coordinates.y}]`,
-            labels: '1',
-            affected_frames: '0',
-            ann_obj_ids: '1',
-            vis_frame_stride: 1
+            input_video: this.input_video_file_url,
+            click_coordinates: `[${this.selected_coordinates.x},${this.selected_coordinates.y}]`,
+            click_labels: '1',
+            click_frames: '0',
+            click_object_ids: '1',
+            output_frame_interval: 1,
+            mask_type: 'greenscreen',
+            output_video: true,
+            video_fps: this.input_video_framerate,
+            output_format: 'webp',
+            output_quality: 80,
+            output_frame_interval: 1
           },
           (prediction) => {
             function getLastPercentage(logString) {
@@ -503,114 +530,9 @@ export default {
 
         // Create mask video from frames
         this.status = 'Downloading video'
-        const frames_highlighted = prediction_sam2?.output?.highlighted_frames
-        const frames_mask = prediction_sam2?.output?.black_white_masks
-        this.output_video_mask = await this.createVideoFromFrames(
-          frames_highlighted
-        )
+        this.output_video = prediction.output[0]
 
-        this.selected_tab = 1
-
-        // Inpainter
-        const batchInpaint = async (
-          frames_mask,
-          frames,
-          batchSize,
-          maxRetries = 3
-        ) => {
-          const inpainted_frames = []
-          for (let i = 0; i < frames_mask.length; i += batchSize) {
-            const batch = frames_mask.slice(i, i + batchSize)
-            const batchFrames = frames.slice(i, i + batchSize)
-
-            this.status = `Inpainting (${Math.ceil(
-              (i / frames_mask.length) * 100
-            )}%)`
-
-            let retryCount = 0
-            let batchResults
-
-            while (retryCount <= maxRetries) {
-              try {
-                const batchPromises = batch.map((mask, index) =>
-                  this.createPrediction(
-                    '7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc',
-                    {
-                      prompt: this.prompt,
-                      image: batchFrames[index],
-                      mask,
-                      width: 512,
-                      height: 512,
-                      num_outputs: 1,
-                      num_inference_steps: 20,
-                      guidance_scale: 7.5,
-                      scheduler: 'K_EULER_ANCESTRAL',
-                      disable_safety_checker: true // Cause of a lot of failures
-                    },
-                    (prediction) => {
-                      console.log(
-                        `--- debug (poll): frame ${i + index + 1} / ${
-                          frames_mask.length
-                        } (status: ${prediction.status})`
-                      )
-                    }
-                  )
-                )
-
-                batchResults = await Promise.all(batchPromises)
-
-                // Check if any prediction failed
-                const failedPrediction = batchResults.find(
-                  (prediction) => !prediction.output
-                )
-
-                if (failedPrediction) {
-                  throw new Error('Batch prediction failed')
-                }
-
-                // If we reach here, all predictions were successful
-                break
-              } catch (error) {
-                console.error(
-                  `Batch processing failed. Retry ${
-                    retryCount + 1
-                  }/${maxRetries}`
-                )
-                retryCount++
-
-                if (retryCount > maxRetries) {
-                  console.error('Max retries reached. Skipping batch.')
-                  batchResults = batch.map(() => ({ output: [null] }))
-                }
-              }
-            }
-
-            inpainted_frames.push(
-              ...batchResults.map((prediction) => prediction.output[0])
-            )
-          }
-          return inpainted_frames
-        }
-
-        this.status = 'Inpainting'
-
-        // Usage
-        const batchSize = 10 // Configurable batch size
-        const maxRetries = 3 // Configurable max retries
-        const inpainted_frames = await batchInpaint(
-          frames_mask,
-          this.input_video_frames,
-          batchSize,
-          maxRetries
-        )
-
-        console.log('inpainted_frames', inpainted_frames)
-        this.status = 'Creating final video'
-
-        // Create final video from inpainted frames
-        this.output_video_inpainted = await this.createVideoFromFrames(
-          inpainted_frames
-        )
+        console.log('prediction', prediction)
       } catch (e) {
         console.log('--- error (pipeline):', e.message)
       } finally {
@@ -638,7 +560,7 @@ export default {
       version,
       input,
       callback = () => {},
-      poll_interval = 10000
+      poll_interval = 3000
     ) {
       try {
         const { data } = await $fetch('/api/prediction', {

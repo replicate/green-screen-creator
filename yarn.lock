@@ -4734,6 +4734,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"green-screen-creator@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "green-screen-creator@workspace:."
+  dependencies:
+    "@ffmpeg/core": 0.10.0
+    "@ffmpeg/ffmpeg": 0.9.8
+    "@nuxt/ui": ^2.18.3
+    "@vueuse/core": ^10.11.0
+    "@vueuse/nuxt": ^10.11.0
+    nuxt: ^3.12.4
+    pug: ^3.0.3
+    pug-plain-loader: ^1.1.0
+    stylus: ^0.63.0
+    stylus-loader: ^8.1.0
+    three: ^0.167.1
+    vue: latest
+  languageName: unknown
+  linkType: soft
+
 "gzip-size@npm:^7.0.0":
   version: 7.0.0
   resolution: "gzip-size@npm:7.0.0"
@@ -5045,24 +5064,6 @@ __metadata:
   checksum: dfd98b0ca3a4fc1e323e38a6c8eb8936e31a97a918d3b377649ea15bdb15d481207a0dda1021efbd86b464cae29a0d33c1d7dcaf6c5672bee17fa849bc50a1b3
   languageName: node
   linkType: hard
-
-"inpainter-video@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "inpainter-video@workspace:."
-  dependencies:
-    "@ffmpeg/core": 0.10.0
-    "@ffmpeg/ffmpeg": 0.9.8
-    "@nuxt/ui": ^2.18.3
-    "@vueuse/core": ^10.11.0
-    "@vueuse/nuxt": ^10.11.0
-    nuxt: ^3.12.4
-    pug: ^3.0.3
-    pug-plain-loader: ^1.1.0
-    stylus: ^0.63.0
-    stylus-loader: ^8.1.0
-    vue: latest
-  languageName: unknown
-  linkType: soft
 
 "ioredis@npm:^5.4.1":
   version: 5.4.1
@@ -8453,6 +8454,13 @@ __metadata:
   dependencies:
     any-promise: ^1.0.0
   checksum: 84e1b804bfec49f3531215f17b4a6e50fd4397b5f7c1bccc427b9c656e1ecfb13ea79d899930184f78bc2f57285c54d9a50a590c8868f4f0cef5c1d9f898b05e
+  languageName: node
+  linkType: hard
+
+"three@npm:^0.167.1":
+  version: 0.167.1
+  resolution: "three@npm:0.167.1"
+  checksum: 4500a7eb16dc9143f0e71b11c4886d003f31cd8e4cd4e755a045afbcdce0f3f9cec47ab1c9d00eb45fa2bb3ace6ef17b105eee93b90b15b43f0af1139db8741d
   languageName: node
   linkType: hard
 

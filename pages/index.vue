@@ -2,6 +2,7 @@
 div
   hero
   uploader
+  demo
 </template>
 
 <script>

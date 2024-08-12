@@ -41,15 +41,16 @@
   .mb-8.mx-auto.gap-4.flex.flex-row.max-w-5xl.items-center(
     class="sm:mb-16 md:mb-24"
   )
-    img.max-h-8.invert(src="/favicon.png")
+    img.max-h-8(src="/logo.png")
     .text-base(
       class="md:text-2xl"
     )
-      | inpainter
-      span.text-primary video
+      span.text-primary green 
+      | screen 
+      span.text-primary creator
     .grow
     u-button(
-      to="https://github.com/replicate/inpainter-video"
+      to="https://github.com/replicate/green-screen-creator"
       target="_blank"
       size="lg"
       icon="i-heroicons-code-bracket"
@@ -62,12 +63,13 @@
       h1.text-5xl.font-bold.tracking-tight.text-gray-900(
         class="dark:text-white sm:text-7xl"
       )
-        | Inpainter 
-        span.text-primary Video
+        span.text-primary Green 
+        | Screen 
+        span.text-primary Creator
       p.mt-6.mb-10.text-lg.tracking-tight.text-gray-600(
         class="dark:text-gray-100"
       )
-        | Make a magic video.
+        | Track an object in a video and add a green screen to the background.
       .flex.justify-center.space-x-2
         u-input(
           v-model="api_token"

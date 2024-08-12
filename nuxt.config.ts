@@ -25,9 +25,9 @@ export default defineNuxtConfig({
       htmlAttrs: {
         class: 'h-full'
       },
-      title: 'Inpainter Video',
+      title: 'Green Screen Creator',
       link: [
-        { rel: 'canonical', href: 'https://inpainter-video.vercel.app' },
+        { rel: 'canonical', href: 'https://green-screen-creator.vercel.app' },
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.png' }
       ],
       meta: [
@@ -47,7 +47,8 @@ export default defineNuxtConfig({
         {
           hid: 'description',
           name: 'description',
-          content: 'Make a magic video.'
+          content:
+            'Track an object in a video and add a green screen to the background.'
         },
         {
           hid: 'og:type',
@@ -59,31 +60,32 @@ export default defineNuxtConfig({
           hid: 'og:url',
           name: 'og:url',
           property: 'og:url',
-          content: 'https://inpainter-video.vercel.app'
+          content: 'https://green-screen-creator.vercel.app'
         },
         {
           hid: 'og:site_name',
           name: 'og:site_name',
           property: 'og:site_name',
-          content: 'inpainter-video.vercel.app'
+          content: 'green-screen-creator.vercel.app'
         },
         {
           hid: 'og:title',
           name: 'og:title',
           property: 'og:title',
-          content: 'Video Inpainter'
+          content: 'Green Screen Creator'
         },
         {
           hid: 'og:description',
           name: 'og:description',
           property: 'og:description',
-          content: 'Make a magic video.'
+          content:
+            'Track an object in a video and add a green screen to the background.'
         },
         {
           hid: 'og:image',
           name: 'og:image',
           property: 'og:image',
-          content: 'https://inpainter-video.vercel.app/cover.jpg'
+          content: 'https://green-screen-creator.vercel.app/cover.jpg'
         },
         {
           hid: 'msapplication-TileColor',
@@ -99,7 +101,7 @@ export default defineNuxtConfig({
         {
           hid: 'apple-mobile-web-app-title',
           name: 'apple-mobile-web-app-title',
-          content: 'inpainter-video.vercel.app'
+          content: 'green-screen-creator.vercel.app'
         }
       ],
       script: [

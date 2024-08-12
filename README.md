@@ -1,6 +1,6 @@
-# Inpainter Video
+# Green Screen Creator
 
-Make a magic video.
+Track an object and add a green screen to the background.
 
 ## Setup
 
