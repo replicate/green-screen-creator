@@ -448,7 +448,7 @@ export default {
         const click_object_ids = this.clicks.map((x, i) => i + 1).join(',')
 
         const prediction = await this.createPrediction(
-          '4cf1856c2e63670fa0a933b62c488d8321a5b5035215cf3e58a31904849deb7a',
+          '2d7219877ca847f463d749d9b224e62f7b078fe035d60a74b58889b455d5cbad',
           {
             input_video: this.input_video_file_url,
             click_coordinates,
