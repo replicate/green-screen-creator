@@ -8,16 +8,21 @@
     h1.text-4xl.font-bold.tracking-tight.text-gray-900(
       class="sm:text-6xl"
     ) Demos
-  video.w-full.rounded-2xl(
-    controls
+  video.w-full.rounded-2xl.mt-12(
+    v-for="(demo, i) in demos"
+    :key="`demo-${i}`"
     crossorigin="anonymous"
+    controls
   )
-    source(src="/demo.mp4")
+    source(:src="`/demo/${demo}.mp4`")
 </template>
 
 <script>
 export default {
-  name: 'Demo'
+  name: 'Demo',
+  data: () => ({
+    demos: ['dog', 'bees', 'jellyfish', 'fountain']
+  })
 }
 </script>
 
