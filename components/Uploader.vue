@@ -457,7 +457,7 @@ export default {
             click_object_ids,
             mask_type: 'greenscreen',
             output_video: true,
-            video_fps: this.input_video_framerate,
+            video_fps: parseInt(this.input_video_framerate),
             output_format: 'webp',
             output_quality: 80,
             output_frame_interval: 1
