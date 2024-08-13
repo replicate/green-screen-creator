@@ -16,44 +16,12 @@
     v-model="modal"
     prevent-close
   )
-    u-card(
-      :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }"
+    clicker(
+      @submit="submit"
+      @reset="modal = false; reset();"
+      :image="input_video_first_frame"
+      :loading="loading_upload"
     )
-      template(#header)
-        .flex.items-center.justify-between
-          h3.text-base.font-semibold.leading-6.text-gray-900(
-            class="dark:text-white"
-          ) Click on an object to track
-      .relative.inline-block
-        img.cursor-pointer(
-          v-if="input_video_first_frame"
-          @click="onImageClicked"
-          :src="input_video_first_frame"
-          class="max-w-full max-h-[70vh]"
-          ref="firstFrameImage"
-        )
-        .absolute.pointer-events-none(
-          v-if="crosshair_position" 
-          :style="{ left: `${crosshair_position.x}px`, top: `${crosshair_position.y}px` }"
-        )
-          .w-6.h-6.border-2.border-red-500.rounded-full.flex.items-center.justify-center(
-            class="-ml-3 -mt-3"
-          )
-            .w-1.h-1.bg-red-500.rounded-full
-      template(#footer)
-        .flex
-          u-button(
-            @click="modal = false; reset();"
-            color="red"
-            variant="link"
-          ) Cancel
-          .grow
-          u-button(
-            @click="submit"
-            :loading="loading_upload"
-            :disabled="!selected_coordinates"
-            color="black"
-          ) Submit
 
   div
     //- File upload
@@ -229,9 +197,7 @@ export default {
 
     output_video: null,
 
-    crosshair_position: null,
-    selected_coordinates: null,
-    frame_image_natural_size: { width: 0, height: 0 },
+    clicks: null,
 
     modal: false,
     status: null
@@ -264,8 +230,7 @@ export default {
       this.input_video_file_url = null
 
       this.output_video = null
-      this.crosshair_position = null
-      this.selected_coordinates = null
+      this.clicks = null
 
       this.status = null
 
@@ -389,22 +354,6 @@ export default {
         console.log('--- error (onFileSelected):', e)
       }
     },
-    onImageClicked(e) {
-      const rect = e.target.getBoundingClientRect()
-      const x = e.clientX - rect.left
-      const y = e.clientY - rect.top
-
-      this.crosshair_position = { x, y }
-
-      // Calculate the coordinates relative to the natural image size
-      const scaleX = this.frame_image_natural_size.width / rect.width
-      const scaleY = this.frame_image_natural_size.height / rect.height
-
-      this.selected_coordinates = {
-        x: Math.round(x * scaleX),
-        y: Math.round(y * scaleY)
-      }
-    },
     async createVideoFromFrames(frames = []) {
       try {
         if (!frames || frames.length <= 0) {
@@ -454,8 +403,9 @@ export default {
         }
       }
     },
-    async submit() {
+    async submit(clicks) {
       this.loading_upload = true
+      this.clicks = clicks
 
       try {
         // Wait for video upload to complete
@@ -490,15 +440,21 @@ export default {
         // https://replicate.com/zsxkib/sam-2-video
         this.status = 'Tracking: starting'
 
+        const click_coordinates = this.clicks
+          .map(({ coordinates }) => `[${coordinates[0]},${coordinates[1]}]`)
+          .join(',')
+        const click_labels = this.clicks.map(({ label }) => label).join(',')
+        const click_frames = this.clicks.map((x) => '1').join(',')
+        const click_object_ids = this.clicks.map((x, i) => i + 1).join(',')
+
         const prediction = await this.createPrediction(
           '4cf1856c2e63670fa0a933b62c488d8321a5b5035215cf3e58a31904849deb7a',
           {
             input_video: this.input_video_file_url,
-            click_coordinates: `[${this.selected_coordinates.x},${this.selected_coordinates.y}]`,
-            click_labels: '1',
-            click_frames: '0',
-            click_object_ids: '1',
-            output_frame_interval: 1,
+            click_coordinates,
+            click_labels,
+            click_frames,
+            click_object_ids,
             mask_type: 'greenscreen',
             output_video: true,
             video_fps: this.input_video_framerate,
