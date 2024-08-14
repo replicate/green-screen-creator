@@ -88,6 +88,23 @@ export default defineNuxtConfig({
           content: 'https://green-screen-creator.vercel.app/cover.jpg'
         },
         {
+          name: 'twitter:card',
+          content: 'summary_large_image'
+        },
+        {
+          name: 'twitter:title',
+          content: 'Green Screen Creator'
+        },
+        {
+          name: 'twitter:description',
+          content:
+            'Track an object in a video and add a green screen to the background.'
+        },
+        {
+          name: 'twitter:image',
+          content: 'https://green-screen-creator.vercel.app/cover.jpg'
+        },
+        {
           hid: 'msapplication-TileColor',
           name: 'msapplication-TileColor',
           content: '#ffffff'
