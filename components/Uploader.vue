@@ -91,7 +91,7 @@
         ) or upload a file from your computer
 
   div.space-y-4
-    template(v-if="loading_prediction")
+    template(v-if="loading_prediction || true")
       template(v-if="!output_video")
         u-divider.mb-4(
           v-if="status"
@@ -102,7 +102,7 @@
           title="The selected object in the video is being tracked"
           description="This is done by the SAM 2 model that is running on Replicate."
           icon="i-heroicons-video-camera"
-          :actions="[{ variant: 'solid', color: 'primary', label: 'Run SAM 2 with an API', icon: 'i-heroicons-arrow-top-right-on-square', trailing: true, click: () => { window.open('https://replicate.com/meta/sam-2-video', '_blank') } }]"
+          :actions="[{ variant: 'solid', color: 'primary', label: 'Run SAM 2 with an API', icon: 'i-heroicons-arrow-top-right-on-square', trailing: true, click: openUrl }]"
           color="primary"
           variant="soft"
         )
@@ -548,6 +548,9 @@ export default {
       } catch (e) {
         console.log('--- error (createPrediction):', e.message)
       }
+    },
+    openUrl() {
+      window.open('https://replicate.com/meta/sam-2-video', '_blank')
     }
   }
 }
