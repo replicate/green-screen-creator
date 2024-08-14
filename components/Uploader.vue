@@ -102,7 +102,7 @@
           title="The selected object in the video is being tracked"
           description="This is done by the SAM 2 model that is running on Replicate."
           icon="i-heroicons-video-camera"
-          :actions="[{ variant: 'solid', color: 'primary', label: 'Run SAM 2 with an API', icon: 'i-heroicons-arrow-top-right-on-square', trailing: true, click: () => { window.open('https://replicate.com/zsxkib/sam-2-video', '_blank') } }]"
+          :actions="[{ variant: 'solid', color: 'primary', label: 'Run SAM 2 with an API', icon: 'i-heroicons-arrow-top-right-on-square', trailing: true, click: () => { window.open('https://replicate.com/meta/sam-2-video', '_blank') } }]"
           color="primary"
           variant="soft"
         )
