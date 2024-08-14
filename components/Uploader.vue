@@ -91,7 +91,7 @@
         ) or upload a file from your computer
 
   div.space-y-4
-    template(v-if="loading_prediction || true")
+    template(v-if="loading_prediction")
       template(v-if="!output_video")
         u-divider.mb-4(
           v-if="status"
