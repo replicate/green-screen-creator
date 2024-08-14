@@ -437,7 +437,7 @@ export default {
 
       try {
         // SAM 2
-        // https://replicate.com/zsxkib/sam-2-video
+        // https://replicate.com/meta/sam-2-video
         this.status = 'Tracking: starting'
 
         const click_coordinates = this.clicks
@@ -448,7 +448,7 @@ export default {
         const click_object_ids = this.clicks.map((x, i) => i + 1).join(',')
 
         const prediction = await this.createPrediction(
-          '7aaeb672847f5ac28a4136639b12f9838b8b4d9e8f24341bcc07eab6c646fc72',
+          '33432afdfc06a10da6b4018932893d39b0159f838b6d11dd1236dff85cc5ec1d',
           {
             input_video: this.input_video_file_url,
             click_coordinates,
