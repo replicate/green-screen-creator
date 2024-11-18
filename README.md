@@ -1,6 +1,8 @@
 # Green Screen Creator
 
-Track an object and add a green screen to the background.
+Track objects in videos and add a green screen to the background.
+
+Powered by Meta's [Segment Anything Model (SAM)](https://replicate.com/meta/sam-2-video) on Replicate.
 
 ## Setup
 

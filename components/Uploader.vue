@@ -436,17 +436,18 @@ export default {
       this.loading_prediction = true
 
       try {
-        // SAM 2
-        // https://replicate.com/meta/sam-2-video
+
         this.status = 'Tracking: starting'
 
         const click_coordinates = this.clicks
           .map(({ coordinates }) => `[${coordinates[0]},${coordinates[1]}]`)
           .join(',')
         const click_labels = this.clicks.map(({ label }) => label).join(',')
-        const click_frames = this.clicks.map((x) => '1').join(',')
+          const click_frames = this.clicks.map((x) => '1').join(',')
         const click_object_ids = this.clicks.map((x, i) => i + 1).join(',')
 
+        // Model: SAM 2
+        // https://replicate.com/meta/sam-2-video
         const prediction = await this.createPrediction(
           '33432afdfc06a10da6b4018932893d39b0159f838b6d11dd1236dff85cc5ec1d',
           {
